@@ -39,34 +39,44 @@ end
 
 threads = []
 
-threads << { state: startstate, name: '0' }
+threads << { state: startstate, name: '0', pos: 0 }
 
-inputstr.each_with_index do |x, i|
+count = 0
+loop do
     alive_threads = []
-
-    puts "ok movenext '#{x}' pos #{i}"
+    puts "ok round #{count}"
 
     threads.each do |thread|
+        if thread[:pos] >= inputstr.length
+            puts "ok incomplete #{thread[:name]} state '#{thread[:state]}'"
+            next
+        end
+
+        letter = inputstr[thread[:pos]]
 
         if final_states.include?(thread[:state])
             puts "ok completed #{thread[:name]}"
             next
         end
-    
-        if !alphabet.include?(x)
-            puts "error unexpected_letter #{thread[:name]} letter '#{x}' position '#{i}'"
+
+        if !alphabet.include?(letter)
+            puts "error unexpected_letter #{thread[:name]} letter '#{letter}' position '#{i}'"
             next
         end
     
         child_list = []
         transitions.each do |t|
-            next unless t[:state] == thread[:state] && t[:letter] == x
+            next unless t[:state] == thread[:state] && t[:letter] == letter
 
             ntname = thread[:name] + child_list.count.to_s
-            puts "ok transition #{ntname} state '#{thread[:state]}' letter '#{x}' state '#{t[:result_state]}'"
+            puts "ok transition #{ntname} state '#{thread[:state]}' letter '#{letter}' state '#{t[:result_state]}'"
+            
+            newpos = thread[:pos] + 1
+            puts "ok #{ntname} move from #{thread[:pos]} to pos #{newpos}"
             new_thread = {
                 state: t[:result_state],
-                name: ntname
+                name: ntname,
+                pos: newpos
             }
     
             child_list << new_thread
@@ -74,7 +84,7 @@ inputstr.each_with_index do |x, i|
         end
     
         if child_list.length.zero?
-            puts "error no_known_transition #{thread[:name]} state '#{thread[:state]}' letter '#{x}'"
+            puts "error no_known_transition #{thread[:name]} state '#{thread[:state]}' letter '#{letter}'"
             next
         end
 
@@ -88,13 +98,10 @@ inputstr.each_with_index do |x, i|
         newname = i.to_s
         puts "ok convert '#{oldname}' '#{newname}'" if oldname != newname
 
-        { state: thethread[:state], name: newname }
+        { state: thethread[:state], name: newname, pos: thethread[:pos] }
     end
 
-end
+    break if threads.length.zero?
 
-puts "ok no_more_input"
-
-threads.each do |thread|
-    puts "ok incomplete #{thread[:name]} state '#{thread[:state]}'"
+    count += 1
 end
