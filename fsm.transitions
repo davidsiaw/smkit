@@ -1,3 +1,7 @@
 start a x
+start a y
 x a x
+x a y
+y a y
 x b end
+x b x
